@@ -23,7 +23,9 @@ http://www.portaudio.com/download.html
 
 **Usage**
 
-```./PythonBlueBox.py```
+```
+./PythonBlueBox.py
+```
 
 You'll see the '>>>' prompt. 
 
