@@ -37,40 +37,39 @@ The current tone mapping works as follows:
 
 ```python
 user_tones = {
-    '1': (user_freq[0], user_freq[4]),
-    '2': (user_freq[0], user_freq[5]),
-    '3': (user_freq[0], user_freq[6]),
-    'A': (user_freq[0], user_freq[7]),
-    '4': (user_freq[1], user_freq[4]),
-    '5': (user_freq[1], user_freq[5]),
-    '6': (user_freq[1], user_freq[6]),
-    'B': (user_freq[1], user_freq[7]),
-    '7': (user_freq[2], user_freq[4]),
-    '8': (user_freq[2], user_freq[5]),
-    '9': (user_freq[2], user_freq[6]),
-    'C': (user_freq[2], user_freq[7]),
-    '*': (user_freq[3], user_freq[4]),
-    '0': (user_freq[3], user_freq[5]),
-    '#': (user_freq[3], user_freq[6]),
-    'D': (user_freq[3], user_freq[7]),
+    '1',
+    '2',
+    '3',
+    'A',
+    '4',
+    '5',
+    '6',
+    'B',
+    '7',
+    '8',
+    '9',
+    'C',
+    '*',
+    '0',
+    '#',
+    'D',
 }
-
 op_tones = {
-    '1': (user_freq[0], user_freq[1]),
-    '2': (user_freq[0], user_freq[2]),
-    '3': (user_freq[1], user_freq[2]),
-    '4': (user_freq[0], user_freq[3]),
-    '5': (user_freq[1], user_freq[3]),
-    '6': (user_freq[2], user_freq[3]),
-    '7': (user_freq[0], user_freq[4]),
-    '8': (user_freq[1], user_freq[4]),
-    '9': (user_freq[2], user_freq[4]),
-    '0': (user_freq[3], user_freq[4]),  # 0 or "10"
-    'A': (user_freq[3], user_freq[4]),  # 0 or "10"
-    'B': (user_freq[0], user_freq[5]),  # 11 or ST3
-    'C': (user_freq[1], user_freq[5]),  # 12 or ST2
-    'D': (user_freq[2], user_freq[5]),  # KP
-    'E': (user_freq[3], user_freq[5]),  # KP2
-    'F': (user_freq[4], user_freq[5]),  # ST
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '0',  # 0 or "10"
+    'A',  # 0 or "10"
+    'B',  # 11 or ST3
+    'C',  # 12 or ST2
+    'D',  # KP
+    'E',  # KP2
+    'F',  # ST
 }
 ```
