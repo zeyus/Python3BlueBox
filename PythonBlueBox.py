@@ -3,6 +3,7 @@
 import pyaudio
 import array
 import math
+import time
 
 
 user_freq = [697.0, 770.0, 852.0, 941.0,
@@ -57,11 +58,14 @@ tone_set = user_tones
 while True:
     commands = input('>>>')
     for command in commands:
-        if command is 'U':
+        if command.upper() is 'U':
             tone_set = user_tones
             continue
-        elif command is 'O':
+        elif command.upper() is 'O':
             tone_set = op_tones
+            continue
+        elif command.upper() is 'P':
+            time.sleep(length)
             continue
         try:
             tone = tone_set[command]
