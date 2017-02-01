@@ -56,15 +56,15 @@ stream = p.open(rate=sr, channels=1, format=pyaudio.paFloat32, output=True)
 
 tone_set = user_tones
 while True:
-    commands = input('>>>')
+    commands = input('>>>').upper()
     for command in commands:
-        if command.upper() is 'U':
+        if command is 'U':
             tone_set = user_tones
             continue
-        elif command.upper() is 'O':
+        elif command is 'O':
             tone_set = op_tones
             continue
-        elif command.upper() is 'P':
+        elif command is 'P':
             time.sleep(length)
             continue
         try:
