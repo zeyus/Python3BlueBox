@@ -74,8 +74,8 @@ while True:
             continue
 
         stream.write(array.array('f',
-                                 ((volume * math.sin(2.0 * math.pi * i * tone[0] / sr) + volume * math.sin(2.0 * math.pi * i * tone[1] / sr))
-                                  for i in range(int(sr*length)))).tostring())
+                                 ((volume * math.sin(2.0 * math.pi * i * tone[0] / float(sr)) + volume * math.sin(2.0 * math.pi * i * tone[1] / float(sr)))
+                                  for i in range(sr*int(length)))).tostring())
 
 
 stream.close()
