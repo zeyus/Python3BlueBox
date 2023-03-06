@@ -3,11 +3,12 @@
 This file can be used to interactively generate tone sequences.
 """
 
+from pathlib import Path
 import argparse
 import logging
 import sys
 from .box import Sequencer
-from .freqs import DTMF, MF
+from . import get_mf, list_mf
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,24 +41,55 @@ def parse_args() -> argparse.Namespace:
             default=44100.0,
             help='The sample rate of the waveforms.')
     parser.add_argument(
-            '-c', '--channels',
-            type=int,
-            default=1,
-            help='The number of channels in the waveforms.')
-    parser.add_argument(
             '-m', '--mf',
             type=str,
-            default='DTMF',
-            help='The MF to use e.g. DTMF.')
+            default='dtmf',
+            help='The MF to use e.g. dtmf, mf.')
     parser.add_argument(
             '-d', '--debug',
             action='store_true',
             help='Enable debug logging.')
-    parser.add_argument(
+    # we can have sequence or file,pipe,stdin OR interactive
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+            '-f', '--file',
+            type=Path,
+            help='The file to read the sequence from.')
+    group.add_argument(
+            '-P', '--pipe',
+            type=Path,
+            help='Read the sequence from a pipe.')
+    group.add_argument(
+            '-S', '--stdin',
+            action='store_true',
+            help='Read the sequence from stdin.')
+    group.add_argument(
+            '-i', '--interactive',
+            action='store_true',
+            help='Enter interactive mode.')
+    group.add_argument(
             'sequence',
             type=str,
-            help='The sequence to generate.')
+            nargs='?',
+            help='The sequence of tones to generate.')
+
     return parser.parse_args()
+
+
+def bluebox_interactive(seq: Sequencer) -> None:
+    """Enter interactive mode."""
+
+    print('Entering interactive mode. Type "exit" to quit.')
+    while True:
+        try:
+            seq(input('Sequence: '))
+        except KeyboardInterrupt:
+            print('Exiting...')
+            break
+        except Exception as e:
+            logging.error(e)
+            if seq._stop_on_error:
+                break
 
 
 def bluebox() -> None:
@@ -76,12 +108,11 @@ def bluebox() -> None:
         stop_on_error = False
         logging.basicConfig(level=logging.INFO)
 
-    if args.mf == 'DTMF':
-        mf = DTMF()
-    elif args.mf == 'MF':
-        mf = MF()
+    if args.mf in list_mf():
+        mf = get_mf(args.mf)()
     else:
         logging.error('Invalid MF: %s', args.mf)
+        logging.error('Valid MFs: %s', ', '.join(list_mf()))
         sys.exit(1)
 
     seq = Sequencer(
@@ -90,9 +121,11 @@ def bluebox() -> None:
             length=args.length,
             pause=args.pause,
             sample_rate=args.sample_rate,
-            channels=args.channels,
+            channels=1,
             stop_on_error=stop_on_error)
-
+    if args.interactive:
+        bluebox_interactive(seq)
+        return
     try:
         seq(args.sequence)
     except Exception as e:

@@ -35,7 +35,9 @@ class Sequencer:
                 channels: int = 1,
                 stop_on_error: bool = False,
                 logger: t.Optional[logging.Logger] = None,
-                backend: t.Optional[BlueboxBackend] = None) -> None:
+                backend: t.Optional[
+                        t.Union[BlueboxBackend, t.Type[BlueboxBackend]]
+                    ] = None) -> None:
         """Initialize the Sequencer object.
 
         Args:
@@ -54,7 +56,7 @@ class Sequencer:
         """
 
         self._mf = mf
-        self._wave = SineWave(sr=sample_rate, ch=channels)
+        self._wave = SineWave(sample_rate=sample_rate, channels=channels)
         self._length = length
         self._amplitude = amplitude
         self._pause = pause
@@ -75,7 +77,7 @@ class Sequencer:
                 channels=channels,
                 amplitude=1.0,
                 logger=self._logger)
-        self._backend = backend  # type: ignore        
+        self._backend = backend  # type: ignore
 
     def sequence(self, codes: str) -> t.Iterator[float]:
         """Generate a sequence of waveforms."""
@@ -101,7 +103,6 @@ class Sequencer:
                     t2 = next(tone2)
                     yield t1 + t2
                 except StopIteration:
-                    print('stop')
                     break
 
             i += 1

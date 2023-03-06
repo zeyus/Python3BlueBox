@@ -15,6 +15,7 @@ class TestBaseMF(unittest.TestCase):
         with self.assertRaises(TypeError):
             freqs.BaseMF()  # type: ignore
 
+
 class TestDTMF(unittest.TestCase):
     def test_dtmf(self) -> None:
         """Test the DTMF class."""

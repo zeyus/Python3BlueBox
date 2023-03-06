@@ -8,6 +8,7 @@ import typing as t
 from abc import ABC, abstractmethod
 import math
 
+
 class BaseMF(ABC):
     """BaseMF class for defining MF frequencies."""
 
