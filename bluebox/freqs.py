@@ -6,7 +6,7 @@ as well as frequency manupulation functions.
 
 import typing as t
 from abc import ABC, abstractmethod
-
+import math
 
 class BaseMF(ABC):
     """BaseMF class for defining MF frequencies."""
@@ -98,7 +98,7 @@ telephone keypad, with additional codes 11, 12, KP, KP2, ST as follows:
 class MF(BaseMF):
     """MF implementation of BaseMF."""
 
-    _col = (700.0, 900.0, 1100.0, 1300.0, 1300.0, 1500.0, 1700.0)
+    _col = (700.0, 900.0, 1100.0, 1300.0, 1500.0, 1700.0)
     _codes = (
         '1', '2', '3',
         '4', '5', '6',
@@ -126,9 +126,8 @@ class MF(BaseMF):
         # get index of code
         idx = self._codes.index(key) if key in self._codes else self._alt_codes.index(key)  # noqa: E501
 
-        # get row and column indices
-        row_idx = idx // self._size[0]
-        col_idx = idx % self._size[1]
+        col_idx = int((math.sqrt(1 + 8 * idx) - 1) / 2)
+        row_idx = idx - (col_idx * (col_idx + 1)) // 2
 
         # return frequency pair
-        return (self._col[row_idx], self._row[col_idx])
+        return (self._row[row_idx], self._col[col_idx+1])
