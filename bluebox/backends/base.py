@@ -3,12 +3,12 @@
 This file contains the base class for the backends.
 """
 
-import abc
+from abc import ABC, abstractmethod
 import typing as t
 import logging
 
 
-class BlueboxBackend(abc.ABC):
+class BlueboxBackend(ABC):
     """BlueboxBackend class for defining backends."""
 
     _sr: float = 44100.0
@@ -28,23 +28,23 @@ class BlueboxBackend(abc.ABC):
         self._amplitude = amplitude
         self._logger = logger or logging.getLogger(__name__)
 
-    @abc.abstractmethod
-    def play(self, data: t.MutableSequence[float]) -> None:
+    @abstractmethod
+    def play(self, data: t.Iterator[float]) -> None:
         """Play the given data."""
 
-    @abc.abstractmethod
-    def play_all(self, queue: t.Iterator[t.MutableSequence[float]]) -> None:
+    @abstractmethod
+    def play_all(self, queue: t.Iterator[t.Iterator[float]]) -> None:
         """Play the given data and then stop."""
 
-    @abc.abstractmethod
+    @abstractmethod
     def stop(self) -> None:
         """Stop playing the data."""
 
-    @abc.abstractmethod
+    @abstractmethod
     def close(self) -> None:
         """Close the backend."""
 
-    @abc.abstractmethod
+    @abstractmethod
     def __del__(self) -> None:
         """Delete the backend."""
         self.close()

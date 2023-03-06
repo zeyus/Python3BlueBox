@@ -5,6 +5,7 @@ This file contains the PyAudio backend for bluebox.
 
 import typing as t
 import logging
+import struct
 import pyaudio
 from .base import BlueboxBackend
 
@@ -39,14 +40,34 @@ class PyAudioBackend(BlueboxBackend):
             self._stream_open = True
         return self._stream
 
-    def play(self, data: t.MutableSequence[float]) -> None:
-        """Play the given data."""
-        self._get_stream().write(data)  # type: ignore
+    def _to_bytes(self, data: t.Iterator[float]) -> bytes:
+        """Wrap the data in a buffer."""
+        _data = []
+        while True:
+            try:
+                d = next(data)
+                _data.append(d)
+            except StopIteration:
+                break
 
-    def play_all(self, queue: t.Iterable[t.MutableSequence[float]]) -> None:
+        return struct.pack(f'{len(_data)}f', *_data)
+
+    def play(self, data: t.Iterator[float], close=True) -> None:
+        """Play the given data."""
+        d = self._to_bytes(data)
+        self._get_stream().write(d)
+        if close:
+            self.close()
+
+    def play_all(self, queue: t.Iterator[t.Iterator[float]]) -> None:
         """Play all the items until the end."""
-        for data in queue:
-            self.play(data)
+        while True:
+            try:
+                data = next(queue)
+                self.play(data, False)
+            except StopIteration:
+                break
+        self.close()
 
     def stop(self) -> None:
         """Stop playing the data."""
@@ -109,6 +130,6 @@ class PyAudioBackendNonBlocking(PyAudioBackend):
 
         self._get_stream(stream_callback)
 
-    def play_all(self, queue: t.Iterable[t.MutableSequence[float]]) -> None:
+    def play_all(self, queue: t.Iterator[t.MutableSequence[float]]) -> None:
         """Not implemented. Probably should use asyncio."""
         raise NotImplementedError()

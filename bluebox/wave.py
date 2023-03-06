@@ -8,7 +8,6 @@ handled in the backend specific files.
 
 import typing as t
 import math
-from array import array
 
 
 class SineWave:
@@ -32,12 +31,12 @@ class SineWave:
             freq: float,
             length: float,
             amplitude: float = 1.0,
-            phase: float = 0.0) -> t.MutableSequence[float]:
+            phase: float = 0.0) -> t.Iterator[float]:
         """Generate a sine wave.
 
         Args:
             freq: The frequency of the sine wave.
-            length: The length of the sine wave in seconds.
+            length: The length of the sine wave in milliseconds.
             amplitude: The amplitude of the sine wave.
             phase: The phase of the sine wave.
 
@@ -45,27 +44,24 @@ class SineWave:
         Returns:
             An array representing the sine wave.
         """
-        wave = array('f')
 
         # silence / pauses
         if freq == 0.0 or amplitude == 0.0:
-            for i in range(math.ceil(length * self._sample_rate)):
-                wave.append(0.0)
-            return wave
+            for i in range(math.ceil(length * self._sample_rate / 1000)):
+                yield 0.0
+            return
 
         # sine wave
-        for i in range(math.ceil(length * self._sample_rate)):
-            wave.append(
-                amplitude * math.sin(
-                    2 * math.pi * freq * (i / self._sample_rate) + phase))
-        return wave
+        for i in range(math.ceil(length * self._sample_rate / 1000)):
+            yield amplitude * math.sin(
+                    2 * math.pi * freq * (i / self._sample_rate) + phase)
 
     def __call__(
                 self,
                 freq: float,
                 length: float,
                 amplitude: float = 1.0,
-                phase: float = 0.0) -> t.MutableSequence[float]:
+                phase: float = 0.0) -> t.Iterator[float]:
         """Generate a sine wave.
 
         Args:

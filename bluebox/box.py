@@ -6,9 +6,9 @@ waveforms.
 
 import typing as t
 import logging
-from array import array
 from .freqs import BaseMF
 from .wave import SineWave
+from .backends import BlueboxBackend, PyAudioBackend
 
 
 class Sequencer:
@@ -23,6 +23,7 @@ class Sequencer:
     _amplitude: float
     _stop_on_error: bool
     _logger: logging.Logger
+    _backend: BlueboxBackend
 
     def __init__(
                 self,
@@ -33,7 +34,8 @@ class Sequencer:
                 sample_rate: float = 44100.0,
                 channels: int = 1,
                 stop_on_error: bool = False,
-                logger: t.Optional[logging.Logger] = None) -> None:
+                logger: t.Optional[logging.Logger] = None,
+                backend: t.Optional[BlueboxBackend] = None) -> None:
         """Initialize the Sequencer object.
 
         Args:
@@ -54,14 +56,28 @@ class Sequencer:
         self._mf = mf
         self._wave = SineWave(sr=sample_rate, ch=channels)
         self._length = length
-        self.amplitude = amplitude
+        self._amplitude = amplitude
         self._pause = pause
         self._sr = sample_rate
         self._ch = channels
         self._stop_on_error = stop_on_error
         self._logger = logger or logging.getLogger(__name__)
+        if backend is None:
+            backend = PyAudioBackend(
+                sample_rate=sample_rate,
+                channels=channels,
+                amplitude=1.0,
+                logger=self._logger)
+        # also check if backend is a type or an instance
+        elif isinstance(backend, type):
+            backend = backend(
+                sample_rate=sample_rate,
+                channels=channels,
+                amplitude=1.0,
+                logger=self._logger)
+        self._backend = backend  # type: ignore        
 
-    def sequence(self, codes: str) -> t.Iterator[t.MutableSequence[float]]:
+    def sequence(self, codes: str) -> t.Iterator[float]:
         """Generate a sequence of waveforms."""
         seq_len: int = len(codes)
         i: int = 0
@@ -74,22 +90,34 @@ class Sequencer:
                 else:
                     self._logger.error(e)
                     continue
-            tone1 = self._wave.sine(freq1, self._length, self._amplitude, 0.)
-            tone2 = self._wave.sine(freq2, self._length, self._amplitude, 0.)
-            mftone = array(
-                'f',
-                [tone1[i] + tone2[i] for i in range(len(tone1))])
-            pause = self._wave.sine(0., self._pause, 0., 0.)
-            i += 1
-            yield mftone
-            # no pause if last
-            if i < seq_len:
-                yield pause
-        raise StopIteration
+            tone1 = self._wave.sine(
+                freq1, self._length, self._amplitude / 2, 0.)
+            tone2 = self._wave.sine(
+                freq2, self._length, self._amplitude / 2, 0.)
 
-    def __call__(self, codes: str) -> t.Iterator[t.MutableSequence[float]]:
+            while True:
+                try:
+                    t1 = next(tone1)
+                    t2 = next(tone2)
+                    yield t1 + t2
+                except StopIteration:
+                    print('stop')
+                    break
+
+            i += 1
+            if i < seq_len:
+                pause = self._wave.sine(0., self._pause, 0., 0.)
+                while True:
+                    try:
+                        p = next(pause)
+                        yield p
+                    except StopIteration:
+                        break
+
+    def __call__(self, codes: str) -> None:
         """Generate a sequence of waveforms."""
-        return self.sequence(codes)
+        seq = self.sequence(codes)
+        self._backend.play(seq)
 
     def __repr__(self) -> str:
         """Get the representation of the Sequencer."""
