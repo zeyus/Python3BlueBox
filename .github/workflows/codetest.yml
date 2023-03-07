@@ -21,6 +21,7 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
         echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
         python -m pip install --progress-bar off --upgrade pip
