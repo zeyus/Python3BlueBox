@@ -24,7 +24,7 @@ pip install -r requirements.txt
 ### CLI
 
 ```
-./bluebox.py -h
+python ./bluebox.py -h
 ```
 
 Output:
@@ -63,11 +63,11 @@ options:
 **Examples**
 
 ```
-./bluebox.py -i
+python ./bluebox.py -i
 ```
 
 ```
-./bluebox.py 123456789
+python ./bluebox.py 123456789
 ```
 
 ### API
