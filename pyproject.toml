@@ -1,0 +1,26 @@
+[tool.pytest.ini_options]
+pythonpath = [
+  ".",
+]
+
+[tool.mypy]
+exclude = [
+  '.git',
+  '__pycache__',
+  'tests',
+]
+show_error_codes = true
+pretty = true
+files = [
+  ".",
+]
+
+#[[tool.mypy.overrides]]
+#ignore_missing_imports = true
+
+[tool.flake8]
+exclude = [
+  '.git',
+  '__pycache__'
+]
+count = true

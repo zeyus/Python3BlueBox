@@ -1,0 +1,43 @@
+name: Lint, test and notify
+
+on: [push]
+
+# env:
+#   PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/nlp4all:$PYTHONPATH
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      id: cpmat
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
+        echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        python -m pip install --progress-bar off --upgrade pip
+        pip install --progress-bar off wheel
+        pip install --progress-bar off -r requirements-dev.txt
+    - name: Print python os env for debugging, and pip freeze
+      run: |
+        printenv
+        pip freeze
+    - name: Analysing the code with Flake8
+      run: |
+        flake8
+    # figure out why mypy doesn't work on github later
+    - name: Type checking with mypy
+      run: |
+        mypy
+    - name: Run tests with pytest
+      run: |
+        pytest
