@@ -70,3 +70,7 @@ class DummyBackend(BlueboxBackend):
     def get_data(self) -> t.List[float]:
         """Get the data."""
         return self._data
+
+    def clear_data(self) -> None:
+        """Clear the data."""
+        self._data = []

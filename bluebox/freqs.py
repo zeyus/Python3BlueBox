@@ -21,11 +21,14 @@ class BaseMF(ABC):
         super().__init__()
         self._size = (len(self._col), len(self._row))
 
+    def valid_codes(self) -> t.Set[str]:
+        """Get the valid codes."""
+        return set(self._codes)
+
     @abstractmethod
     def __getitem__(self, key: str) -> t.Tuple[float, float]:
         """Get the frequencies for a given code."""
-        if key not in self._codes:
-            raise KeyError(f'Invalid code: {key}')
+        raise NotImplementedError
 
     def __len__(self) -> int:
         """Get the number of codes."""
@@ -57,7 +60,8 @@ class DTMF(BaseMF):
 
     def __getitem__(self, key: str) -> t.Tuple[float, float]:
         """Get the DTMF frequencies for a given code."""
-        super().__getitem__(key)
+        if key not in self._codes:
+            raise KeyError(f'Invalid code: {key}')
         return (self._col[self._codes.index(key) // self._size[0]],
                 self._row[self._codes.index(key) % self._size[1]])
 
@@ -116,6 +120,11 @@ class MF(BaseMF):
     def __init__(self, ) -> None:
         self._row = self._col
         super().__init__()
+
+    def valid_codes(self) -> t.Set[str]:
+        return set(
+            self._codes +
+            tuple(c for c in self._alt_codes if c is not None))
 
     def __getitem__(self, key: str) -> t.Tuple[float, float]:
         """Get the MF frequencies for a given code."""

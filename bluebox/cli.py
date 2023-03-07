@@ -3,15 +3,17 @@
 This file can be used to interactively generate tone sequences.
 """
 
+import typing as t
 from pathlib import Path
 import argparse
 import logging
 import sys
 from .box import Sequencer
-from . import get_mf, list_mf
+from . import get_mf, list_mf, __version__
+from .backends import get_backend, list_backends
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(args: t.Optional[t.Sequence[str]] = None) -> argparse.Namespace:
     """Parse the command line arguments.
 
     Returns:
@@ -49,6 +51,18 @@ def parse_args() -> argparse.Namespace:
             '-d', '--debug',
             action='store_true',
             help='Enable debug logging.')
+    parser.add_argument(
+            '-b', '--backend',
+            type=str,
+            default='pyaudio',
+            help='The backend to use for playing the waveforms.'
+    )
+    parser.add_argument(
+            '-r', '--pad-pause-duration',
+            type=float,
+            default=150.0,
+            help='The duration (ms) of the pause before/after sequence.'
+    )
     # we can have sequence or file,pipe,stdin OR interactive
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -72,8 +86,13 @@ def parse_args() -> argparse.Namespace:
             type=str,
             nargs='?',
             help='The sequence of tones to generate.')
+    group.add_argument(
+        '-v', '--version',
+        action='version',
+        version='%(prog)s ' + __version__,
+    )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def bluebox_interactive(seq: Sequencer) -> None:
@@ -92,14 +111,14 @@ def bluebox_interactive(seq: Sequencer) -> None:
                 break
 
 
-def bluebox() -> None:
+def bluebox(args: t.Optional[argparse.Namespace] = None) -> None:
     """Generate a tone sequence.
 
     This function can be used to generate a tone sequence from the
     command line.
     """
 
-    args = parse_args()
+    args = args or parse_args()
 
     if args.debug:
         stop_on_error = True
@@ -115,6 +134,13 @@ def bluebox() -> None:
         logging.error('Valid MFs: %s', ', '.join(list_mf()))
         sys.exit(1)
 
+    if args.backend in list_backends():
+        backend = get_backend(args.backend)
+    else:
+        logging.error('Invalid backend: %s', args.backend)
+        logging.error('Valid backends: %s', ', '.join(list_backends()))
+        sys.exit(1)
+
     seq = Sequencer(
             mf=mf,
             amplitude=args.amplitude,
@@ -122,15 +148,48 @@ def bluebox() -> None:
             pause=args.pause,
             sample_rate=args.sample_rate,
             channels=1,
-            stop_on_error=stop_on_error)
+            stop_on_error=stop_on_error,
+            backend=backend,
+            pad_pause=args.pad_pause_duration)
     if args.interactive:
         bluebox_interactive(seq)
         return
-    try:
-        seq(args.sequence)
-    except Exception as e:
-        logging.error(e)
-        sys.exit(1)
+
+    if args.file:
+        try:
+            with args.file.open() as f:
+                seq(f.read())
+        except Exception as e:
+            logging.error(e)
+            sys.exit(1)
+        return
+
+    if args.pipe:
+        try:
+            with args.pipe.open() as f:
+                seq(f.read())
+        except Exception as e:
+            logging.error(e)
+            sys.exit(1)
+        return
+
+    if args.stdin:
+        try:
+            seq(sys.stdin.read())
+        except Exception as e:
+            logging.error(e)
+            sys.exit(1)
+        return
+
+    if args.sequence:
+        try:
+            seq(args.sequence)
+        except Exception as e:
+            logging.error(e)
+            sys.exit(1)
+        return
+
+    raise RuntimeError('No sequence specified, you can use -h for help.')
 
 
 if __name__ == '__main__':

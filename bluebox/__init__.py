@@ -1,6 +1,8 @@
 import typing as t
 from .freqs import BaseMF, DTMF, MF
 
+__version__ = '0.1.0'
+
 _MF: t.Dict[str, t.Type[BaseMF]] = {}
 
 

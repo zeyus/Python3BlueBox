@@ -24,6 +24,9 @@ class Sequencer:
     _stop_on_error: bool
     _logger: logging.Logger
     _backend: BlueboxBackend
+    _pad_pause: float
+    _meta_codes: t.Set[str] = set(['p', 'P'])
+    _valid_codes: t.Set[str]
 
     def __init__(
                 self,
@@ -37,7 +40,8 @@ class Sequencer:
                 logger: t.Optional[logging.Logger] = None,
                 backend: t.Optional[
                         t.Union[BlueboxBackend, t.Type[BlueboxBackend]]
-                    ] = None) -> None:
+                    ] = None,
+                pad_pause: float = 150.0) -> None:
         """Initialize the Sequencer object.
 
         Args:
@@ -78,12 +82,68 @@ class Sequencer:
                 amplitude=1.0,
                 logger=self._logger)
         self._backend = backend  # type: ignore
+        self._pad_pause = pad_pause
+
+        self._valid_codes = set(
+            self._mf.valid_codes() |
+            self._meta_codes)
+
+    def _pause_generator(
+                        self,
+                        length: t.Optional[float] = None) -> t.Iterator[float]:
+        """Generate a pause waveform."""
+        if length is None:
+            length = self._pause
+        pause = self._wave.sine(0., length, 0., 0.)
+        while True:
+            try:
+                p = next(pause)
+                yield p
+            except StopIteration:
+                break
+
+    def _sine_mf_generator(
+                            self,
+                            freq1: float,
+                            freq2: float,
+                            length: t.Optional[float] = None,
+                            amplitude: t.Optional[float] = None,
+                            phase: float = 0.) -> t.Iterator[float]:
+        """Generate a sine wave with the given frequencies."""
+        if length is None:
+            length = self._length
+        if amplitude is None:
+            amplitude = self._amplitude
+        tone1 = self._wave.sine(
+            freq1, length, amplitude / 2., phase)
+        tone2 = self._wave.sine(
+            freq2, length, amplitude / 2., phase)
+        while True:
+            try:
+                t1 = next(tone1)
+                t2 = next(tone2)
+                yield t1 + t2
+            except StopIteration:
+                break
 
     def sequence(self, codes: str) -> t.Iterator[float]:
         """Generate a sequence of waveforms."""
         seq_len: int = len(codes)
         i: int = 0
+        if self._pad_pause > 0:
+            # generate a pause at the start of the sequence
+            yield from self._pause_generator(self._pad_pause)
+
         for code in codes:
+            if code not in self._valid_codes:
+                if self._stop_on_error:
+                    raise ValueError(
+                        f"Invalid code '{code}' in sequence '{codes}'")
+                continue
+            elif code in self._meta_codes:
+                yield from self._pause_generator()
+                i += 1
+                continue
             try:
                 freq1, freq2 = self._mf[code]
             except KeyError as e:
@@ -92,28 +152,16 @@ class Sequencer:
                 else:
                     self._logger.error(e)
                     continue
-            tone1 = self._wave.sine(
-                freq1, self._length, self._amplitude / 2, 0.)
-            tone2 = self._wave.sine(
-                freq2, self._length, self._amplitude / 2, 0.)
 
-            while True:
-                try:
-                    t1 = next(tone1)
-                    t2 = next(tone2)
-                    yield t1 + t2
-                except StopIteration:
-                    break
+            yield from self._sine_mf_generator(freq1, freq2)
 
             i += 1
             if i < seq_len:
-                pause = self._wave.sine(0., self._pause, 0., 0.)
-                while True:
-                    try:
-                        p = next(pause)
-                        yield p
-                    except StopIteration:
-                        break
+                yield from self._pause_generator()
+
+        if self._pad_pause > 0:
+            # generate a pause at the end of the sequence
+            yield from self._pause_generator(self._pad_pause)
 
     def __call__(self, codes: str) -> None:
         """Generate a sequence of waveforms."""
