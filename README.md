@@ -1,11 +1,20 @@
 # Python 3 Blue Box DTMF Tone Generator
-===================
 
-Modernized python bluebox
+Modernized python bluebox DTMF tone generator / dialer.
+
+![image](https://user-images.githubusercontent.com/75656/223700347-4d9d1f94-854a-4245-b336-8122c2cbdcf6.png)
+
 
 ## How it works
 
-You can run this in interactive mode, or from a file, pipe, stdin, etc.
+In essence, this is a simple utility that creates dual tone multi-frequency sine waves (50/50 mixed, but that can easily be adjusted). What does this mean? Well you know the sounds that you hear if you have the touchpad tones turned on when you dial a number in your phone? That's what this is. It's able to generate the tones that correspond to the number and output it to an audio device or a python `list` (for example).
+
+This tool has a CLI interface which allows you to send a sequence of codes via `stdin`, pipes, files, as an argument, or in an interactive mode.
+
+### Why?
+
+Well, initially this was a fun little python 3 project from 2015, but I thought it would be nice to make it modern and extensible, essentially showcasing it as a framework, but this doesn't have to be limited to DTMF / MF, in theory with ease you could turn this into something that reads in code sequences (`str`) and outputs waves. Also due to issue #3 https://github.com/zeyus/Python3BlueBox/issues/3 it was clear that there were some bugs, so what better way to deal with it than adding tests and a way to decouple things!
+
 
 ## Installation
 
