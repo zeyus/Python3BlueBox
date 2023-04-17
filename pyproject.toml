@@ -1,3 +1,33 @@
+[project]
+name = "mfbluebox"
+version = "0.1.2"
+authors = [
+  { name="zeyus", email="support@zeyus.com" },
+]
+description = "A python (Dual-Tone) Multi-Frequency (DTMF) tone generator."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+license = {file = "LICENSE.md"}
+dependencies = [
+    "PyAudio",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+"Homepage" = "https://github.com/zeyus/Python3BlueBox"
+"Bug Tracker" = "https://github.com/zeyus/Python3BlueBox/issues"
+
+[tool.setuptools.packages.find]
+include = ["bluebox*"]
+
 [tool.pytest.ini_options]
 pythonpath = [
   ".",
