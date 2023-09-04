@@ -12,6 +12,6 @@ packaging==23.1
 pluggy==1.2.0
 pycodestyle==2.11.0
 pyflakes==3.1.0
-pytest==7.4.0
+pytest==7.4.1
 typing_extensions==4.7.1
 
