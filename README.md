@@ -2,7 +2,7 @@
 
 Modernized python bluebox DTMF tone generator / dialer.
 
-![image](https://user-images.githubusercontent.com/75656/223700347-4d9d1f94-854a-4245-b336-8122c2cbdcf6.png)
+![BlueBox Phreaking](https://github.com/zeyus/Python3BlueBox/assets/75656/32f0c9c7-6c44-4e6e-ba3e-d10595398dcd)
 
 
 ## How it works
