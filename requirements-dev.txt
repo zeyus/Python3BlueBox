@@ -1,5 +1,5 @@
 -r requirements.txt
-attrs==23.1.0
+attrs==23.2.0
 build==1.0.3
 certifi==2023.7.22
 colorama==0.4.6
