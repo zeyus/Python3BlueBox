@@ -10,7 +10,7 @@ mypy==1.15.0
 mypy-extensions==1.0.0
 packaging==24.2
 pluggy==1.5.0
-pycodestyle==2.12.1
+pycodestyle==2.13.0
 pyflakes==3.2.0
 pytest==8.3.5
 typing_extensions==4.12.2
