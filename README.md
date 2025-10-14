@@ -2,7 +2,7 @@
 
 Modernized python bluebox DTMF tone generator / dialer.
 
-![BlueBox Phreaking](https://github.com/zeyus/Python3BlueBox/assets/75656/32f0c9c7-6c44-4e6e-ba3e-d10595398dcd)
+![BlueBox Phreaking](./blue-box.png)
 
 
 ## How it works
@@ -44,7 +44,7 @@ pip install -e ".[dev]"
 
 ### Requirements
 
-- Python 3.9+ (tested on 3.9 - 3.14)
+- Python 3.9+ (tested on 3.9 - 3.14, CI on 3.11 - 3.14)
 - PortAudio (for audio playback)
 
 ## Usage
@@ -147,5 +147,3 @@ Same thing for audio backends.
 Currently there are two MF implementations (DTMF and MF), and two audio backends (PyAudio and Dummy).
 
 If you want to contribute, make a fork, and a branch. Please make any PR against develop.
-
-
