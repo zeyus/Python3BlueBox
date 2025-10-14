@@ -3,7 +3,7 @@ attrs==25.4.0
 build==1.2.2.post1
 certifi==2025.1.31
 colorama==0.4.6
-flake8==7.1.2
+flake8==7.3.0
 iniconfig==2.1.0
 mccabe==0.7.0
 mypy==1.15.0
