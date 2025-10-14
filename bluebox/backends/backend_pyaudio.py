@@ -14,6 +14,7 @@ class PyAudioBackend(BlueboxBackend):
     """PyAudioBackend class for the PyAudio backend."""
 
     _stream: pyaudio.Stream
+    _pyaudio_instance: pyaudio.PyAudio
     _stream_open: bool = False
     _device: t.Union[int, None]
 
@@ -23,17 +24,19 @@ class PyAudioBackend(BlueboxBackend):
                 channels: int = 1,
                 amplitude: float = 1.0,
                 logger: t.Optional[logging.Logger] = None,
-                device: t.Union[int, None] = None) -> None:
+                device: t.Union[int, None] = None,
+                **kwargs: t.Any) -> None:
         """Initialize the PyAudio backend."""
-        super().__init__(sample_rate, channels, amplitude, logger)
+        super().__init__(sample_rate, channels, amplitude, logger, **kwargs)
         self._device = device
+        self._pyaudio_instance = pyaudio.PyAudio()
 
     def _get_stream(
                     self,
                     callback: t.Optional[t.Callable] = None) -> pyaudio.Stream:
         """Get the PyAudio stream."""
         if not self._stream_open:
-            self._stream = pyaudio.PyAudio().open(
+            self._stream = self._pyaudio_instance.open(
                 format=pyaudio.paFloat32,
                 channels=self._ch,
                 rate=int(self._sr),
@@ -44,18 +47,11 @@ class PyAudioBackend(BlueboxBackend):
         return self._stream
 
     def _to_bytes(self, data: t.Iterator[float]) -> bytes:
-        """Wrap the data in a buffer."""
-        _data = []
-        while True:
-            try:
-                d = next(data)
-                _data.append(d)
-            except StopIteration:
-                break
-
+        """Convert iterator to bytes efficiently."""
+        _data = list(data)
         return struct.pack(f'{len(_data)}f', *_data)
 
-    def play(self, data: t.Iterator[float], close=True) -> None:
+    def play(self, data: t.Iterator[float], close: bool = True) -> None:
         """Play the given data."""
         d = self._to_bytes(data)
         self._get_stream().write(d)
@@ -64,12 +60,8 @@ class PyAudioBackend(BlueboxBackend):
 
     def play_all(self, queue: t.Iterator[t.Iterator[float]]) -> None:
         """Play all the items until the end."""
-        while True:
-            try:
-                data = next(queue)
-                self.play(data, False)
-            except StopIteration:
-                break
+        for data in queue:
+            self.play(data, False)
         self.close()
 
     def stop(self) -> None:
@@ -84,8 +76,10 @@ class PyAudioBackend(BlueboxBackend):
             self._stream_open = False
 
     def __del__(self) -> None:
-        """Close the backend."""
+        """Close the backend and terminate PyAudio."""
         self.close()
+        if hasattr(self, '_pyaudio_instance'):
+            self._pyaudio_instance.terminate()
 
 
 # class PyAudioBackendNonBlocking(PyAudioBackend):

@@ -57,13 +57,22 @@ class DTMF(BaseMF):
         '4', '5', '6', 'B',
         '7', '8', '9', 'C',
         '*', '0', '#', 'D')
+    _code_map: t.Dict[str, t.Tuple[float, float]]
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Build lookup dict for O(1) access
+        self._code_map = {
+            code: (self._col[i // self._size[0]],
+                   self._row[i % self._size[1]])
+            for i, code in enumerate(self._codes)
+        }
 
     def __getitem__(self, key: str) -> t.Tuple[float, float]:
         """Get the DTMF frequencies for a given code."""
-        if key not in self._codes:
+        if key not in self._code_map:
             raise KeyError(f'Invalid code: {key}')
-        return (self._col[self._codes.index(key) // self._size[0]],
-                self._row[self._codes.index(key) % self._size[1]])
+        return self._code_map[key]
 
 
 """
@@ -117,7 +126,7 @@ class MF(BaseMF):
         '10', 'ST3', 'ST2',
         None, None, None)
 
-    def __init__(self, ) -> None:
+    def __init__(self) -> None:
         self._row = self._col
         super().__init__()
 
@@ -127,17 +136,36 @@ class MF(BaseMF):
             tuple(c for c in self._alt_codes if c is not None))
 
     def __getitem__(self, key: str) -> t.Tuple[float, float]:
-        """Get the MF frequencies for a given code."""
+        """Get the MF frequencies for a given code.
 
-        # ensure code is valid
+        The MF frequency pairs form a triangular pattern where each code
+        corresponds to a unique pair from the frequency sequence. This
+        uses the inverse triangular number formula to map linear index
+        to (row, col).
+
+        Mathematical basis:
+        - Triangular number: T(n) = n(n+1)/2
+        - Inverse: n = floor((-1 + sqrt(1 + 8*T)) / 2)
+
+        Args:
+            key: The code to look up (e.g., '1', 'KP', 'ST')
+
+        Returns:
+            Tuple of two frequencies (low, high) in Hz
+
+        Raises:
+            KeyError: If the code is not valid for this MF scheme
+        """
+        # Ensure code is valid
         if key not in self._codes and key not in self._alt_codes:
             raise KeyError(f'Invalid code: {key}')
 
-        # get index of code
+        # Get index of code
         idx = self._codes.index(key) if key in self._codes else self._alt_codes.index(key)  # noqa: E501
 
+        # Apply inverse triangular number formula
         col_idx = int((math.sqrt(1 + 8 * idx) - 1) / 2)
         row_idx = idx - (col_idx * (col_idx + 1)) // 2
 
-        # return frequency pair
+        # Return frequency pair
         return (self._row[row_idx], self._col[col_idx+1])

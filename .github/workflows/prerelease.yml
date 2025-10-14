@@ -1,0 +1,82 @@
+name: Pre-release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    # Only run if not a tag push
+    if: github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper versioning
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
+
+      - name: Install dependencies and build
+        run: |
+          uv sync --all-extras
+          uv build
+
+      - name: Get version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "PRERELEASE_TAG=v${VERSION}-dev.${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Delete existing pre-release
+        run: |
+          # Delete the 'latest-dev' release if it exists
+          gh release delete latest-dev --yes || true
+          # Delete the 'latest-dev' tag if it exists
+          git push origin :refs/tags/latest-dev || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pre-release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Development Build (v${{ steps.get_version.outputs.VERSION }})
+          tag_name: latest-dev
+          draft: false
+          prerelease: true
+          generate_release_notes: true
+          body: |
+            ## Development Build
+
+            This is an automated pre-release build from the latest `main` branch.
+
+            **Version**: ${{ steps.get_version.outputs.VERSION }}-dev
+            **Commit**: ${{ github.sha }}
+
+            ### Installation
+
+            ```bash
+            pip install https://github.com/${{ github.repository }}/releases/download/latest-dev/mfbluebox-${{ steps.get_version.outputs.VERSION }}-py3-none-any.whl
+            ```
+
+            ⚠️ **Warning**: This is a development build and may contain bugs.
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

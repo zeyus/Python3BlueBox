@@ -20,27 +20,46 @@ Well, initially this was a fun little python 3 project from 2015, but I thought 
 
 ### PyPI
 
-```
+```bash
 pip install mfbluebox
 ```
 
 ### Development
 
-```
+With [uv](https://github.com/astral-sh/uv) (recommended):
+
+```bash
 git clone https://github.com/zeyus/Python3BlueBox.git
-cd PythonBlueBox
-pip install .
+cd Python3BlueBox
+uv sync --all-extras
+```
+
+With pip:
+
+```bash
+git clone https://github.com/zeyus/Python3BlueBox.git
+cd Python3BlueBox
+pip install -e ".[dev]"
 ```
 
 ### Requirements
 
-- Python 3 (tested on 3.9 - 3.11)
+- Python 3.9+ (tested on 3.9 - 3.14)
+- PortAudio (for audio playback)
 
 ## Usage
 
 ### CLI
 
+With uv (in development):
+
+```bash
+uv run python -m bluebox -h
 ```
+
+With pip/system Python:
+
+```bash
 python -m bluebox -h
 ```
 
@@ -79,11 +98,19 @@ options:
 
 **Examples**
 
-```
+Interactive mode:
+
+```bash
+uv run python -m bluebox -i
+# or with system Python:
 python -m bluebox -i
 ```
 
-```
+Play a sequence:
+
+```bash
+uv run python -m bluebox 123456789
+# or with system Python:
 python -m bluebox 123456789
 ```
 

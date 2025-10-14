@@ -22,9 +22,10 @@ class DummyBackend(BlueboxBackend):
                 channels: int = 1,
                 amplitude: float = 1.0,
                 logger: t.Optional[logging.Logger] = None,
-                mode: str = 'print') -> None:
+                mode: str = 'print',
+                **kwargs: t.Any) -> None:
         """Initialize the dummy backend."""
-        super().__init__(sample_rate, channels, amplitude, logger)
+        super().__init__(sample_rate, channels, amplitude, logger, **kwargs)
         self._mode = mode
         self._data = []
 
@@ -40,7 +41,7 @@ class DummyBackend(BlueboxBackend):
 
         return _data
 
-    def play(self, data: t.Iterator[float], close=True) -> None:
+    def play(self, data: t.Iterator[float], close: bool = True) -> None:
         """Play the given data."""
         d = self._to_bytes(data)
         if self._mode == 'print':

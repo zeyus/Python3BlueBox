@@ -55,7 +55,13 @@ def parse_args(args: t.Optional[t.Sequence[str]] = None) -> argparse.Namespace:
             '-b', '--backend',
             type=str,
             default='pyaudio',
-            help='The backend to use for playing the waveforms.'
+            help='The backend to use for playing the waveforms '
+                 '(pyaudio, wav, dummy).'
+    )
+    parser.add_argument(
+            '-o', '--output',
+            type=Path,
+            help='Output file path (required for wav backend).'
     )
     parser.add_argument(
             '-r', '--pad-pause-duration',
@@ -96,19 +102,52 @@ def parse_args(args: t.Optional[t.Sequence[str]] = None) -> argparse.Namespace:
 
 
 def bluebox_interactive(seq: Sequencer) -> None:
-    """Enter interactive mode."""
+    """Enter interactive mode.
 
-    print('Entering interactive mode. Type "exit" to quit.')
+    Commands:
+        exit, quit - Exit interactive mode
+        help - Show available commands
+        codes - Show valid codes for current MF scheme
+    """
+    print('Entering interactive mode.')
+    print('Type "help" for commands, "exit" to quit.')
+
     while True:
         try:
-            seq(input('Sequence: '))
+            user_input = input('Sequence: ').strip()
+
+            # Handle empty input
+            if not user_input:
+                continue
+
+            # Handle commands
+            if user_input.lower() in ('exit', 'quit'):
+                print('Exiting...')
+                break
+            elif user_input.lower() == 'help':
+                print('Commands:')
+                print('  exit, quit - Exit interactive mode')
+                print('  help       - Show this help message')
+                print('  codes      - Show valid codes for current MF scheme')
+                print('Or enter a sequence of tones to play')
+                continue
+            elif user_input.lower() == 'codes':
+                codes_str = ", ".join(sorted(seq._mf.valid_codes()))
+                print(f'Valid codes: {codes_str}')
+                continue
+
+            # Play sequence
+            seq(user_input)
+
         except KeyboardInterrupt:
-            print('Exiting...')
+            print('\nExiting...')
+            break
+        except EOFError:
+            print('\nEOF received, exiting...')
             break
         except Exception as e:
-            logging.error(e)
-            if seq._stop_on_error:
-                break
+            logging.error(f'Error: {e}')
+            # Continue on error in interactive mode
 
 
 def bluebox(args: t.Optional[argparse.Namespace] = None) -> None:
@@ -135,11 +174,27 @@ def bluebox(args: t.Optional[argparse.Namespace] = None) -> None:
         sys.exit(1)
 
     if args.backend in list_backends():
-        backend = get_backend(args.backend)
+        backend_class = get_backend(args.backend)
     else:
         logging.error('Invalid backend: %s', args.backend)
         logging.error('Valid backends: %s', ', '.join(list_backends()))
         sys.exit(1)
+
+    # WAV backend requires output path
+    if args.backend == 'wav':
+        if not args.output:
+            logging.error('WAV backend requires --output/-o parameter')
+            sys.exit(1)
+        backend = backend_class(
+            output_path=args.output,
+            sample_rate=args.sample_rate,
+            channels=1,
+            amplitude=1.0)
+    else:
+        backend = backend_class(
+            sample_rate=args.sample_rate,
+            channels=1,
+            amplitude=1.0)
 
     seq = Sequencer(
             mf=mf,

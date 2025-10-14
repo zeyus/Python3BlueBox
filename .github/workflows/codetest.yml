@@ -2,9 +2,6 @@ name: Lint, test and notify
 
 on: [push]
 
-# env:
-#   PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/nlp4all:$PYTHONPATH
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,32 +9,26 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      id: cpmat
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    - name: Install dependencies
+        enable-cache: true
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+    - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
-        echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
-        python -m pip install --progress-bar off --upgrade pip
-        pip install --progress-bar off wheel
-        pip install --progress-bar off -r requirements-dev.txt
-    - name: Print python os env for debugging, and pip freeze
+    - name: Install Python dependencies
+      run: uv sync --all-extras
+    - name: Print environment for debugging
       run: |
-        printenv
-        pip freeze
+        uv run python --version
+        uv pip list
     - name: Analysing the code with Flake8
-      run: |
-        flake8
-    # figure out why mypy doesn't work on github later
+      run: uv run flake8
     - name: Type checking with mypy
-      run: |
-        mypy
+      run: uv run mypy
     - name: Run tests with pytest
-      run: |
-        pytest
+      run: uv run pytest

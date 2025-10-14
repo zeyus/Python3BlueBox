@@ -6,6 +6,7 @@ This file contains the base class for the backends.
 from abc import ABC, abstractmethod
 import typing as t
 import logging
+from pathlib import Path
 
 
 class BlueboxBackend(ABC):
@@ -21,8 +22,17 @@ class BlueboxBackend(ABC):
                 sample_rate: float = 44100.0,
                 channels: int = 1,
                 amplitude: float = 1.0,
-                logger: t.Optional[logging.Logger] = None) -> None:
-        """Initialize the backend."""
+                logger: t.Optional[logging.Logger] = None,
+                output_path: t.Optional[t.Union[str, Path]] = None) -> None:
+        """Initialize the backend.
+
+        Args:
+            sample_rate: Sample rate in Hz.
+            channels: Number of audio channels.
+            amplitude: Maximum amplitude.
+            logger: Optional logger instance.
+            output_path: Optional output path (used by file-based backends).
+        """
         self._sr = sample_rate
         self._ch = channels
         self._amplitude = amplitude

@@ -2,6 +2,7 @@ import typing as t
 from .base import BlueboxBackend as BlueboxBackend  # noqa: F401
 from .backend_pyaudio import PyAudioBackend as PyAudioBackend  # noqa: F401
 from .backend_dummy import DummyBackend as DummyBackend  # noqa: F401
+from .backend_wav import WavBackend as WavBackend  # noqa: F401
 
 _BACKENDS: t.Dict[str, t.Type[BlueboxBackend]] = {}
 
@@ -23,3 +24,4 @@ def list_backends() -> t.List[str]:
 
 register_backend('pyaudio', PyAudioBackend)
 register_backend('dummy', DummyBackend)
+register_backend('wav', WavBackend)

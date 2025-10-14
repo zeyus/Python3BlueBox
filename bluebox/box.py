@@ -48,16 +48,42 @@ class Sequencer:
             mf: The MF to use e.g. DTMF.
             amplitude: The combined amplitude of the waveforms.
                        The frequencies will be combined and scaled
-                       to fit within this amplitude.
-            length: The length of each tone in milliseconds.
+                       to fit within this amplitude. Must be in (0, 1.0].
+            length: The length of each tone in milliseconds. Must be positive.
             pause: The length of the pause between tones in
-                     milliseconds.
-            sample_rate: The sample rate of the waveforms.
+                     milliseconds. Must be non-negative.
+            sample_rate: The sample rate of the waveforms. Must be positive.
             channels: The number of channels in the waveforms.
+                Must be at least 1.
             stop_on_error: Whether to stop on an error or not.
-                           If False, the error will be logged, otherwise
-                            it will be raised.
+                If False, the error will be logged, otherwise
+                it will be raised.
+            logger: Optional logger instance for logging.
+            backend: Optional backend for audio output. Can be a class
+                or instance.
+            pad_pause: Duration (ms) of the pause before/after sequence.
+                Must be non-negative.
+
+        Raises:
+            ValueError: If any parameter is out of valid range.
         """
+        # Validate parameters
+        if amplitude <= 0 or amplitude > 1.0:
+            raise ValueError(
+                f'Amplitude must be in (0, 1.0], got {amplitude}')
+        if length <= 0:
+            raise ValueError(f'Length must be positive, got {length}')
+        if pause < 0:
+            raise ValueError(f'Pause must be non-negative, got {pause}')
+        if sample_rate <= 0:
+            raise ValueError(
+                f'Sample rate must be positive, got {sample_rate}')
+        if channels < 1:
+            raise ValueError(
+                f'Channels must be at least 1, got {channels}')
+        if pad_pause < 0:
+            raise ValueError(
+                f'Pad pause must be non-negative, got {pad_pause}')
 
         self._mf = mf
         self._wave = SineWave(sample_rate=sample_rate, channels=channels)
@@ -127,40 +153,56 @@ class Sequencer:
                 break
 
     def sequence(self, codes: str) -> t.Iterator[float]:
-        """Generate a sequence of waveforms."""
-        seq_len: int = len(codes)
-        i: int = 0
+        """Generate a sequence of waveforms.
+
+        Processes the input codes, filtering out invalid ones, and generates
+        the corresponding tone sequences with proper pauses.
+        """
+        # Filter and validate codes first
+        valid_codes = []
+        for i, code in enumerate(codes):
+            if code not in self._valid_codes:
+                msg = (f"Invalid code '{code}' at position {i} "
+                       f"in sequence '{codes}'")
+                if self._stop_on_error:
+                    raise ValueError(msg)
+                else:
+                    self._logger.warning(msg)
+                    continue
+            valid_codes.append(code)
+
+        if not valid_codes:
+            self._logger.info('No valid codes in sequence, nothing to play')
+            return
+
+        seq_len = len(valid_codes)
+
         if self._pad_pause > 0:
-            # generate a pause at the start of the sequence
+            # Generate a pause at the start of the sequence
             yield from self._pause_generator(self._pad_pause)
 
-        for code in codes:
-            if code not in self._valid_codes:
-                if self._stop_on_error:
-                    raise ValueError(
-                        f"Invalid code '{code}' in sequence '{codes}'")
-                continue
-            elif code in self._meta_codes:
+        for i, code in enumerate(valid_codes):
+            if code in self._meta_codes:
+                # Meta code: insert pause
                 yield from self._pause_generator()
-                i += 1
-                continue
-            try:
-                freq1, freq2 = self._mf[code]
-            except KeyError as e:
-                if self._stop_on_error:
-                    raise e
-                else:
-                    self._logger.error(e)
-                    continue
+            else:
+                try:
+                    freq1, freq2 = self._mf[code]
+                except KeyError as e:
+                    if self._stop_on_error:
+                        raise e
+                    else:
+                        self._logger.error(e)
+                        continue
 
-            yield from self._sine_mf_generator(freq1, freq2)
+                yield from self._sine_mf_generator(freq1, freq2)
 
-            i += 1
-            if i < seq_len:
+            # Add pause between tones (not after last tone)
+            if i < seq_len - 1:
                 yield from self._pause_generator()
 
         if self._pad_pause > 0:
-            # generate a pause at the end of the sequence
+            # Generate a pause at the end of the sequence
             yield from self._pause_generator(self._pad_pause)
 
     def __call__(self, codes: str) -> None:

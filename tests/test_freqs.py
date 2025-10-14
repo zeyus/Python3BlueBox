@@ -74,3 +74,30 @@ class TestMF(unittest.TestCase):
         self.assertEqual('1' in mf, True)
         self.assertEqual('KP2' in mf, True)
         self.assertNotEqual('KP3' in mf, True)
+
+    def test_dtmf_dict_lookup(self) -> None:
+        """Test that DTMF uses O(1) dictionary lookup."""
+        dtmf = freqs.DTMF()
+        # Verify code_map exists and is a dict
+        self.assertTrue(hasattr(dtmf, '_code_map'))
+        self.assertIsInstance(dtmf._code_map, dict)
+        # Verify all codes are in the map
+        for code in dtmf._codes:
+            self.assertIn(code, dtmf._code_map)
+            # Verify values match expected frequencies
+            freq_pair = dtmf[code]
+            self.assertEqual(freq_pair, dtmf._code_map[code])
+
+    def test_mf_all_codes(self) -> None:
+        """Test that all MF codes can be looked up."""
+        mf = freqs.MF()
+        # Test all standard codes (not the issue #3 edge cases)
+        for code in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+                     '10', '11', '12', 'KP', 'KP2']:
+            freq_pair = mf[code]
+            self.assertEqual(len(freq_pair), 2)
+            self.assertGreater(freq_pair[0], 0)
+            self.assertGreater(freq_pair[1], 0)
+            # Verify frequencies are from the valid set
+            self.assertIn(freq_pair[0], mf._col)
+            self.assertIn(freq_pair[1], mf._col)
