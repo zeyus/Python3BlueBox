@@ -66,7 +66,10 @@ python -m bluebox -h
 Output:
 
 ```
-usage: __main__.py [-h] [-l LENGTH] [-p PAUSE] [-a AMPLITUDE] [-s SAMPLE_RATE] [-m MF] [-d] [-b BACKEND] [-r PAD_PAUSE_DURATION] [-f FILE] [-P PIPE] [-S] [-i] [-v] [sequence]
+usage: python3 -m bluebox [-h] [-l LENGTH] [-p PAUSE] [-a AMPLITUDE] [-s SAMPLE_RATE] [-m MF]
+                          [-d] [-b BACKEND] [-o OUTPUT] [-r PAD_PAUSE_DURATION] [-f FILE]
+                          [-P PIPE] [-S] [-i] [-v]
+                          [sequence]
 
 Generate tone sequences.
 
@@ -75,22 +78,21 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -l LENGTH, --length LENGTH
-                        The length of each tone in milliseconds.
-  -p PAUSE, --pause PAUSE
-                        The length of the pause between tones in milliseconds.
-  -a AMPLITUDE, --amplitude AMPLITUDE
+  -l, --length LENGTH   The length of each tone in milliseconds.
+  -p, --pause PAUSE     The length of the pause between tones in milliseconds.
+  -a, --amplitude AMPLITUDE
                         The combined amplitude of the waveforms.
-  -s SAMPLE_RATE, --sample-rate SAMPLE_RATE
+  -s, --sample-rate SAMPLE_RATE
                         The sample rate of the waveforms.
-  -m MF, --mf MF        The MF to use e.g. dtmf, mf.
+  -m, --mf MF           The MF to use e.g. dtmf, mf.
   -d, --debug           Enable debug logging.
-  -b BACKEND, --backend BACKEND
-                        The backend to use for playing the waveforms.
-  -r PAD_PAUSE_DURATION, --pad-pause-duration PAD_PAUSE_DURATION
+  -b, --backend BACKEND
+                        The backend to use for playing the waveforms (pyaudio, wav, dummy).
+  -o, --output OUTPUT   Output file path (required for wav backend).
+  -r, --pad-pause-duration PAD_PAUSE_DURATION
                         The duration (ms) of the pause before/after sequence.
-  -f FILE, --file FILE  The file to read the sequence from.
-  -P PIPE, --pipe PIPE  Read the sequence from a pipe.
+  -f, --file FILE       The file to read the sequence from.
+  -P, --pipe PIPE       Read the sequence from a pipe.
   -S, --stdin           Read the sequence from stdin.
   -i, --interactive     Enter interactive mode.
   -v, --version         show program's version number and exit
@@ -114,6 +116,14 @@ uv run python -m bluebox 123456789
 python -m bluebox 123456789
 ```
 
+Write a wav file:
+
+```bash
+uv run python -m bluebox -b wav -o sequence.wav 1234567890
+# or with system python:
+python -m bluebox -b wav -o sequence.wav 1234567890
+```
+
 ### API
 
 You mainly need an `BaseMF` subclass instance and a `Sequencer` instance.
@@ -135,5 +145,7 @@ Development of different MF implementations and audio backends is extremely easy
 Same thing for audio backends.
 
 Currently there are two MF implementations (DTMF and MF), and two audio backends (PyAudio and Dummy).
+
+If you want to contribute, make a fork, and a branch. Please make any PR against develop.
 
 
