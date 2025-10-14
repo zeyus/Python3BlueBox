@@ -47,7 +47,7 @@ class PyAudioBackend(BlueboxBackend):
         return self._stream
 
     def _to_bytes(self, data: t.Iterator[float]) -> bytes:
-        """Convert iterator to bytes efficiently."""
+        """Convert iterator to bytes."""
         _data = list(data)
         return struct.pack(f'{len(_data)}f', *_data)
 
