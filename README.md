@@ -1,5 +1,10 @@
 # Python 3 Blue Box DTMF Tone Generator
 
+[![PyPI - Version](https://img.shields.io/pypi/v/mfbluebox)](https://pypi.org/project/mfbluebox/) [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zeyus/Python3BlueBox/codetest.yml)](https://github.com/zeyus/Python3BlueBox/actions/workflows/codetest.yml)
+ [![PyPI - Downloads](https://img.shields.io/pypi/dm/mfbluebox)](https://pypi.org/project/mfbluebox/) [![PyPI - License](https://img.shields.io/pypi/l/mfbluebox)](LICENSE.md) 
+
+
+
 Modernized python bluebox DTMF tone generator / dialer.
 
 ![BlueBox Phreaking](./blue-box.png)
