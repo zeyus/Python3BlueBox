@@ -1,6 +1,6 @@
 [project]
 name = "mfbluebox"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
   { name="zeyus", email="support@zeyus.com" },
 ]
