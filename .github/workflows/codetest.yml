@@ -1,4 +1,6 @@
 name: Lint, test and notify
+permissions:
+  contents: read
 
 on: [push]
 
