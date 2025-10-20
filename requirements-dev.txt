@@ -1,7 +1,7 @@
 -r requirements.txt
 attrs==25.4.0
 build==1.2.2.post1
-certifi==2025.1.31
+certifi==2025.10.5
 colorama==0.4.6
 flake8==7.3.0
 iniconfig==2.1.0
