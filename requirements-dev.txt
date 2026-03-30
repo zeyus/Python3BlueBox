@@ -1,6 +1,6 @@
 -r requirements.txt
 attrs==26.1.0
-build==1.4.0
+build==1.4.2
 certifi==2026.2.25
 colorama==0.4.6
 flake8==7.3.0
