@@ -36,15 +36,7 @@ With [uv](https://github.com/astral-sh/uv) (recommended):
 ```bash
 git clone https://github.com/zeyus/Python3BlueBox.git
 cd Python3BlueBox
-uv sync --all-extras
-```
-
-With pip:
-
-```bash
-git clone https://github.com/zeyus/Python3BlueBox.git
-cd Python3BlueBox
-pip install -e ".[dev]"
+uv sync # sets up venv and dependencies
 ```
 
 ### Requirements
@@ -56,17 +48,12 @@ pip install -e ".[dev]"
 
 ### CLI
 
-With uv (in development):
+With [uv](https://github.com/astral-sh/uv):
 
 ```bash
 uv run python -m bluebox -h
 ```
 
-With pip/system Python:
-
-```bash
-python -m bluebox -h
-```
 
 Output:
 
@@ -152,3 +139,33 @@ Same thing for audio backends.
 Currently there are two MF implementations (DTMF and MF), and two audio backends (PyAudio and Dummy).
 
 If you want to contribute, make a fork, and a branch. Please make any PR against develop.
+
+### Setting up dev environment
+
+With [uv](https://github.com/astral-sh/uv):
+
+```bash
+git clone https://github.com/zeyus/Python3BlueBox.git
+cd Python3BlueBox
+uv sync --all-extras # sets up venv and dependencies with dev dependencies
+```
+
+### Running dev tools
+
+Linting:
+
+```bash
+uv run flake8
+```
+
+Type checking:
+
+```bash
+uv run mypy
+```
+
+Testing:
+
+```bash
+uv run pytest
+```
