@@ -1,7 +1,8 @@
 import typing as t
-from .freqs import BaseMF, DTMF, MF
 
-__version__ = '0.2.2'
+from .freqs import DTMF, MF, BaseMF
+
+__version__ = "0.3.0"
 
 _MF: t.Dict[str, t.Type[BaseMF]] = {}
 
@@ -21,5 +22,5 @@ def list_mf() -> t.List[str]:
     return list(_MF.keys())
 
 
-register_mf('dtmf', DTMF)
-register_mf('mf', MF)
+register_mf("dtmf", DTMF)
+register_mf("mf", MF)

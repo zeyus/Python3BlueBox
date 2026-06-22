@@ -1,12 +1,12 @@
 [project]
 name = "mfbluebox"
-version = "0.2.2"
+version = "0.3.0"
 authors = [
   { name="zeyus", email="support@zeyus.com" },
 ]
 description = "A python (Dual-Tone) Multi-Frequency (DTMF) tone generator."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -19,10 +19,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.5",
-    "mypy>=1.15.0",
+    "pytest>=9.1.1",
+    "mypy>=2.1.0",
     "flake8>=7.3.0",
-    "build>=1.2.2",
+    "build>=1.5.0",
 ]
 
 [build-system]

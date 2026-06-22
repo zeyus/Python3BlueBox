@@ -49,7 +49,7 @@ pip install -e ".[dev]"
 
 ### Requirements
 
-- Python 3.9+ (tested on 3.9 - 3.14, CI on 3.11 - 3.14)
+- Python 3.10+ (tested on 3.10 - 3.14, CI on 3.11 - 3.14)
 - PortAudio (for audio playback)
 
 ## Usage
